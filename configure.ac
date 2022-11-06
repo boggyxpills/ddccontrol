@@ -1,4 +1,4 @@
-AC_INIT([DDC/CI control tool],[0.5.2],[DDCControl users list <ddccontrol-users@lists.sourceforge.net>],[ddccontrol])
+AC_INIT([DDC/CI control tool],[0.6.0],[DDCControl users list <ddccontrol-users@lists.sourceforge.net>],[ddccontrol])
 AC_CONFIG_SRCDIR([src/ddccontrol/main.c])
 AC_CONFIG_HEADERS([src/config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -13,12 +13,12 @@ AC_SUBST([GETTEXT_PACKAGE])
 AC_PROG_CC
 AM_PROG_AR
 AC_PROG_INSTALL
+AC_PROG_MKDIR_P
 LT_INIT
 PKG_PROG_PKG_CONFIG
 
 AC_LANG([C])
 
-AC_HEADER_STDC
 AC_CHECK_HEADERS([stdio.h unistd.h sys/time.h stdlib.h errno.h unistd.h string.h sys/types.h sys/stat.h fcntl.h sys/ioctl.h dirent.h], [], [AC_MSG_ERROR([Important header not found, please install it.], [1])], [])
 
 check_xsltproc=yes
@@ -88,17 +88,7 @@ CFLAGS="$CFLAGS -Wall  -DDATADIR=\"\\\"${datadir}/ddccontrol-db\\\"\" -DBINDIR=\
 AC_SEARCH_LIBS([round],[m])
 
 # libxml2 check
-
-AC_PATH_PROG(XML2_CONFIG, xml2-config, no)
-if test "x$XML2_CONFIG" = "xno" ; then
-   AC_MSG_ERROR([xml2-config not found, please install libxml2, available at http://www.xmlsoft.org/.], [1])
-fi
-
-LIBXML2_LDFLAGS="`xml2-config --libs`"
-LIBXML2_CFLAGS="`xml2-config --cflags`"
-
-AC_SUBST([LIBXML2_LDFLAGS])
-AC_SUBST([LIBXML2_CFLAGS])
+PKG_CHECK_MODULES([LIBXML2], [libxml-2.0])
 
 # Direct PCI memory access check
 support_ddcpci=yes
@@ -174,7 +164,7 @@ if test x$support_gnome = xyes; then
 
    echo -n "checking for gtk+>=2.4 and gthread>=2.4... "
    if $PKG_CONFIG --atleast-version=2.4 gtk+-2.0 gthread-2.0 ; then
-      GNOME_LDFLAGS="$LIBXML2_LDFLAGS `$PKG_CONFIG --libs gtk+-2.0 gthread-2.0`"
+      GNOME_LDFLAGS="$LIBXML2_LIBS `$PKG_CONFIG --libs gtk+-2.0 gthread-2.0`"
       GNOME_CFLAGS="$LIBXML2_CFLAGS `$PKG_CONFIG --cflags gtk+-2.0 gthread-2.0`"
       GDDCCONTROL=gddccontrol
       echo "yes"
@@ -200,7 +190,7 @@ GNOME_APPLET=
 if test x$support_gnome_applet = xyes; then
 	if $PKG_CONFIG --atleast-version=2.10 libpanelapplet-2.0 ; then
 		GNOME_APPLET="gnome-ddcc-applet"
-	    GNOME_LDFLAGS="$LIBXML2_LDFLAGS `$PKG_CONFIG --libs gtk+-2.0 gthread-2.0 libpanelapplet-2.0`"
+	    GNOME_LDFLAGS="$LIBXML2_LIBS `$PKG_CONFIG --libs gtk+-2.0 gthread-2.0 libpanelapplet-2.0`"
 	    GNOME_CFLAGS="$LIBXML2_CFLAGS `$PKG_CONFIG --cflags gtk+-2.0 gthread-2.0 libpanelapplet-2.0`"
 	fi
 fi
@@ -306,5 +296,6 @@ AC_CONFIG_FILES([
 	src/ddcpci/Makefile
 	src/gnome-ddcc-applet/Makefile
 	doc/Makefile
+	doc/main.xml
 	man/Makefile])
 AC_OUTPUT
